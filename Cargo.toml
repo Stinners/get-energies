@@ -1,0 +1,9 @@
+[package]
+name = "get-energies"
+version = "0.1.0"
+authors = ["Chris Stinson <7259243+Stinners@users.noreply.github.com>"]
+
+[dependencies]
+regex = "0.2"
+clap = "2.31"
+lazy_static = "1.0" 
