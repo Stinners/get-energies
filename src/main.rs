@@ -6,11 +6,11 @@ extern crate regex;
 
 mod results;
 mod get_filetype;
+
 mod pychem;
+mod gamess;
 mod qchem;
 
-
-// stdlin imports 
 
 // external crate imports 
 use clap::{Arg, App, ArgMatches};
@@ -89,7 +89,8 @@ fn get_methods(results: &Vec<FileResults>, args: &ArgMatches) -> Vec<String> {
 fn read_energies(results: &mut FileResults, lines: Reader) {
     match results.program {
         Program::PyChem => pychem::read(results, lines),
-        Program::QChem => unimplemented!(),
+        Program::QChem => qchem::read(results, lines),
+        Program::Gamess => gamess::read(results, lines),
         _ => println!("Not implimented")
     };
 }

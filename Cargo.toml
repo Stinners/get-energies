@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Chris Stinson <7259243+Stinners@users.noreply.github.com>"]
 
 [dependencies]
-regex = "0.2"
+regex = "1.0"
 clap = "2.31"
 lazy_static = "1.0" 
+
+[profile.release]
+codegen-units = 1

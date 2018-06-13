@@ -48,6 +48,7 @@ fn make_method_lines(results: &Vec<FileResults>, method: &str) -> String {
 	let mut method_string = String::new();
 	for result in results.iter() {
 		for (i, energies) in result.calculations.iter().enumerate() {
+			if energies.len() == 0 { continue; }
 			let line = match energies.get(method) {
 				Some(values) => build_line(values), 
 				None => format!("No {} energies found for {} calculation {}",

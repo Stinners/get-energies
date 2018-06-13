@@ -16,7 +16,6 @@ lazy_static! {
 
 pub fn check(line: &str) -> bool {
     lazy_static! {  static ref CHECK_RE: Regex =  Regex::new(r"^pychem").unwrap(); }
-
     CHECK_RE.is_match(line)
 }
 

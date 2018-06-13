@@ -2,7 +2,9 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead, Result, Lines};
 
+use gamess;
 use pychem;
+use qchem;
 
 pub type Reader = Lines<BufReader<File>>;
 
@@ -10,7 +12,7 @@ pub type Reader = Lines<BufReader<File>>;
 pub enum Program {
     PyChem,
     QChem,
-    //Gamess,
+    Gamess,
     Unknown,
 }
 
@@ -21,7 +23,6 @@ pub fn get_filetype(path: &str) -> (Program, Option<Reader>) {
 
     // Return earli if the file can't be read
     if lines.is_err() {
-        println!("Can't open {}", path);
         (Program::Unknown, None)
 
     } else { 
@@ -33,7 +34,8 @@ pub fn get_filetype(path: &str) -> (Program, Option<Reader>) {
         for line in lines.by_ref().take(50) {
             let line = line.unwrap();
             if pychem::check(&line) { filetype = Program::PyChem } 
-            else if qchem::check() { filetype = Program::QChem }
+            else if qchem::check(&line) { filetype = Program::QChem }
+            else if gamess::check(&line) { filetype = Program::Gamess }
 
             // When we find the filetype we want to return it along
             // with the remaining lines
