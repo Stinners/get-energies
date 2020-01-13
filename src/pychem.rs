@@ -4,9 +4,6 @@ use regex::Regex;
 use results::FileResults;
 use get_filetype::Reader;
 
-
-
-
 lazy_static! {
     static ref HF_RE: Regex = Regex::new(r"^ *Final HF energy: +(-?[0-9]*\.[0-9]*)").unwrap();
     static ref NUMBER_REGEX: Regex = Regex::new(r"(-?[0-9]*\.[0-9]+)").unwrap();
