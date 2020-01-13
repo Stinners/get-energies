@@ -1,7 +1,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use get_filetype::Program;
+use crate::get_filetype::Program;
 
 // Energies is a hashmap of method names to energy values
 pub type Energies = HashMap<String, Vec<String>>;
@@ -9,6 +9,7 @@ pub type Energies = HashMap<String, Vec<String>>;
 // The results from a single file
 // Each method in a calculation corresponds to a 
 // single line of output
+#[derive(Debug)]
 pub struct FileResults {
     pub program: Program,
     pub filename: String,
@@ -24,8 +25,11 @@ impl FileResults {
         }
     }
 
-    pub fn add_energy(&mut self, method: &str, energy: &str) {
-        let method = method.to_string();
+    pub fn add_energy<M>(&mut self, method: M, energy: &str) 
+		where M: Into<String>,
+	{
+		   
+        let method = method.into();
         let latest_calc = self.calculations.last_mut().unwrap();
         latest_calc.entry(method)
             .and_modify(|energies| energies.push(energy.to_string()))
@@ -35,6 +39,7 @@ impl FileResults {
     pub fn start_new_calc(&mut self) {
         self.calculations.push(HashMap::new());
     }
+
 }
 
 // Convert a vector of energies to the appriate csv representation 
@@ -42,17 +47,24 @@ fn build_line(energies: &Vec<String>) -> String {
 	energies.iter().fold(String::new(), |string, energy| string + &format!("{}, ", energy))
 }
 
-// Construct the text to print for a single method by iterative over all the 
+// Construct the text to print for a single method by iterating over all the 
 // results and calculations 
-fn make_method_lines(results: &Vec<FileResults>, method: &str) -> String {
+fn make_method_lines(results: &Vec<FileResults>, method: &str, print_errors: bool) -> String {
 	let mut method_string = String::new();
+	// Loop over all the result files to find all energies of a particular method
 	for result in results.iter() {
 		for (i, energies) in result.calculations.iter().enumerate() {
 			if energies.len() == 0 { continue; }
 			let line = match energies.get(method) {
 				Some(values) => build_line(values), 
-				None => format!("No {} energies found for {} calculation {}",
-								method, result.filename, i),
+				None => {
+					if print_errors {
+						format!("No {} energies found for {} calculation {}",
+								method, result.filename, i)
+					} else {
+						"".to_string()
+					}
+				},
 			};
 			method_string.push_str(&line);
 			method_string.push('\n');
@@ -62,12 +74,12 @@ fn make_method_lines(results: &Vec<FileResults>, method: &str) -> String {
 }
 
 
-pub fn print_energies(results: &Vec<FileResults>, methods: &Vec<String>) {
+pub fn print_energies(results: &Vec<FileResults>, methods: &Vec<String>, print_errors: bool) {
 
 	for method in methods.iter() {
-		let method_text = make_method_lines(results, method);
+		let method_text = make_method_lines(results, method, print_errors);
 		if method_text.len() > 0 {
-			println!("===> {}", method);
+			println!("===> {},", method);
 			println!("{}", method_text);
 		}
 	}

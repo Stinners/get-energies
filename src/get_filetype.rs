@@ -2,13 +2,15 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead, Result, Lines};
 
-use gamess;
-use pychem;
-use qchem;
+use crate::{
+    gamess,
+    pychem,
+    qchem,
+};
 
 pub type Reader = Lines<BufReader<File>>;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum Program {
     PyChem,
     QChem,
@@ -16,34 +18,31 @@ pub enum Program {
     Unknown,
 }
 
-
 pub fn get_filetype(path: &str) -> (Program, Option<Reader>) {
 
-    let lines = get_iterator(path);
+    match get_iterator(path) {
 
-    // Return earli if the file can't be read
-    if lines.is_err() {
-        (Program::Unknown, None)
+        // Return early if the file can't be read 
+        Err(_) => (Program::Unknown, None),
 
-    } else { 
-        // Look at the first fifty lines max
-        let mut lines = lines.unwrap();
-        let mut filetype = Program::Unknown;
-        
+        // Otherwise look at the first 50 lines maximum
+        Ok(mut lines) => {
+            let mut filetype = Program::Unknown;
 
-        for line in lines.by_ref().take(50) {
-            let line = line.unwrap();
-            if pychem::check(&line) { filetype = Program::PyChem } 
-            else if qchem::check(&line) { filetype = Program::QChem }
-            else if gamess::check(&line) { filetype = Program::Gamess }
+            for line in lines.by_ref().take(50) {
+                let line = line.unwrap();
+                if pychem::check(&line) { filetype = Program::PyChem } 
+                else if qchem::check(&line) { filetype = Program::QChem }
+                else if gamess::check(&line) { filetype = Program::Gamess }
 
-            // When we find the filetype we want to return it along
-            // with the remaining lines
-            if filetype != Program::Unknown {
-                break;
+                // When we find the filetype we want to return it along
+                // with the remaining lines
+                if filetype != Program::Unknown {
+                    break;
+                }
             }
+            (filetype, Some(lines))
         }
-        (filetype, Some(lines))
     }
 }
 

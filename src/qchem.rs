@@ -1,15 +1,20 @@
 
 use regex::Regex;
+use lazy_static::lazy_static;
 
-use results::FileResults;
-use get_filetype::Reader;
+use crate::{
+    results::FileResults,
+    get_filetype::Reader,
+};
 
 lazy_static! {
     static ref NEW_CALC: Regex = Regex::new("^User input: [0-9]+ of [0-9]+").unwrap();
     static ref HF_RE: Regex = Regex::new(r"^ SCF   energy in the final basis set = (-?[0-9]*\.[0-9]+)").unwrap();
     static ref SFCI_RE: Regex = Regex::new(r"RAS-CI total energy for state +[0-9]+: +(-?[0-9]*\.[0-9]+)").unwrap();
-    static ref CCSDT_RE: Regex = Regex::new(r"^ +CCSD\(T\) total energy += +(-?[0-9]*\.[0-9]+)").unwrap();
-    static ref MP2_RE: Regex = Regex::new(r"^ +MP2 energy + = +(-?[0-9]*\.[0-9]+)").unwrap();
+    static ref CCSDT_RE: Regex = Regex::new(r"^ CCSD\(T\) total energy += +(-?[0-9]*\.[0-9]+)").unwrap();
+    static ref MP2_RE: Regex = Regex::new(r"^ MP2 energy + = +(-?[0-9]*\.[0-9]+)").unwrap();
+    static ref CC_RE: Regex = Regex::new(r"^ (CCSD.*) total energy += +(-?[0-9]*\.[0-9]+)").unwrap();
+    static ref CIS_RE: Regex = Regex::new(r"^ +Total energy for state +[0-9]+: +(-?[0-9]*\.[0-9]+)").unwrap();
 }
 
 
@@ -35,6 +40,11 @@ pub fn read(results: &mut FileResults, lines: Reader) {
         else if capture_energy(&line, &SFCI_RE, "SFCI", results) {}
         else if capture_energy(&line, &CCSDT_RE, "CCSD(T)", results) {}
         else if capture_energy(&line, &MP2_RE, "MP2", results) {}
+        else if capture_energy(&line, &CIS_RE, "CIS", results) {}
+
+        else if let Some(captures) = CC_RE.captures(&line) {
+            results.add_energy(&captures[1], &captures[2]);
+        }
     }
 }
 
