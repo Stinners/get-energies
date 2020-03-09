@@ -44,6 +44,7 @@ pub fn read(results: &mut FileResults, lines: Reader) {
             read_noci = true;
         } 
         // Then actually read all the energies
+        // On the next line
         else if read_noci {
             for energy in NUMBER_REGEX.captures_iter(&line) {
                 results.add_energy("NOCI", &energy[1]);

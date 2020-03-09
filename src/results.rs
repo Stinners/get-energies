@@ -43,8 +43,9 @@ impl FileResults {
 }
 
 // Convert a vector of energies to the appriate csv representation 
-fn build_line(energies: &Vec<String>) -> String {
-	energies.iter().fold(String::new(), |string, energy| string + &format!("{}, ", energy))
+fn build_line(energies: &Vec<String>, n: usize) -> String {
+	energies.iter()
+        .fold(format!("{:>3}, ", n), |string, energy| string + &format!("{}, ", energy))
 }
 
 // Construct the text to print for a single method by iterating over all the 
@@ -52,17 +53,18 @@ fn build_line(energies: &Vec<String>) -> String {
 fn make_method_lines(results: &Vec<FileResults>, method: &str, print_errors: bool) -> String {
 	let mut method_string = String::new();
 	// Loop over all the result files to find all energies of a particular method
-	for result in results.iter() {
-		for (i, energies) in result.calculations.iter().enumerate() {
+	for (file_num, result) in results.iter().enumerate() {
+        // Loop over each calculation in the file
+		for (calc_num, energies) in result.calculations.iter().enumerate() {
 			if energies.len() == 0 { continue; }
 			let line = match energies.get(method) {
-				Some(values) => build_line(values), 
+				Some(values) => build_line(values, file_num+calc_num), 
 				None => {
 					if print_errors {
 						format!("No {} energies found for {} calculation {}",
-								method, result.filename, i)
+								method, result.filename, calc_num)
 					} else {
-						"".to_string()
+						String::new()
 					}
 				},
 			};
